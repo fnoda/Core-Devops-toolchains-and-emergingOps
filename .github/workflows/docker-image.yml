@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Docker_Image
 
 on:
   push:
@@ -15,4 +15,27 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      run: docker build . --file Dockerfile --tag Docker_Image:$(date +%s)
+
+  test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build and run tests
+      run: |
+        docker build . --file Dockerfile.test --tag Docker_Image:$(date +%s)
+        docker run Docker_Image:$(date +%s)
+
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Deploy the Docker image
+      run: |
+        echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+        docker build . --file Dockerfile.prod --tag Docker_Image:$(date +%s)
+        docker push Docker_Image:$(date +%s)
